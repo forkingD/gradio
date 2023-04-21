@@ -1,11 +1,12 @@
 import gradio as gr
 import openai 
-openai.api_key = "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"
+import os
+openai.api_key = os.getenv(OPEN_API_KEY)
 
 def greet(name):
     return "Hello " + name + "!"
 
-def generate_reply(prompt):
+def generate_reply(prompt, chat_history):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}]
@@ -13,13 +14,23 @@ def generate_reply(prompt):
         )
     message = response['choices'][0]['message']['content']
     cost = response['usage']['total_tokens']
-    return message.strip()
+    chat_history.append((message, message))
+    return message.strip(), chat_history
+
+#interface = gr.Interface(
+#    fn=generate_reply,
+#    inputs=gr.Textbox(label="User Input"),
+#    outputs=gr.Textbox(label="Chatbot Response")
+#)
+#interface.launch()
 
 
-interface = gr.Interface(
-    fn=generate_reply,
-    inputs=gr.inputs.Textbox(label="User Input"),
-    outputs=gr.outputs.Textbox(label="Chatbot Response")
-)
+with gr.Blocks() as demo:
+    chatbot = gr.Chatbot()
+    msg = gr.Textbox()
+    clear = gr.Button("Clear")
 
-interface.launch()
+    msg.submit(generate_reply, [msg, chatbot], [msg, chatbot])
+    clear.click(lambda: None, None, chatbot, queue=False)
+
+demo.launch()
