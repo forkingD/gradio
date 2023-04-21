@@ -1,7 +1,7 @@
 import gradio as gr
 import openai 
 import os
-os.environ.get(OPEN_API_KEY)
+os.environ.get('OPENAI_API_KEY')
 
 def greet(name):
     return "Hello " + name + "!"
